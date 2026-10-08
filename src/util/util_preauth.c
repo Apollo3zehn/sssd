@@ -72,9 +72,13 @@ errno_t create_preauth_indicator(void)
         close(fd);
     }
 
-    ret = atexit(cleanup_preauth_indicator);
-    if (ret != EOK) {
-        DEBUG(SSSDBG_OP_FAILURE, "atexit failed. Continuing.\n");
+    /* Keep the indicator around for socket activated responders so clients
+     * can request pre-auth even after the responder exits when idle. */
+    if (!is_socket_activated()) {
+        ret = atexit(cleanup_preauth_indicator);
+        if (ret != EOK) {
+            DEBUG(SSSDBG_OP_FAILURE, "atexit failed. Continuing.\n");
+        }
     }
 
     ret = EOK;
